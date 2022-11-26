@@ -21,7 +21,7 @@ def importation(database):
     return pd.read_csv(database, low_memory=False)
 
 
-loan = importation('LoanData.csv')
+loan = importation('C:/Users/DELL/OneDrive/Bureau/Pycharm_project/LoanData.csv')
 
 
 loan = loan[["NewCreditCustomer", "VerificationType", "Age", "Gender", "Country", "Amount", "Interest", "LoanDuration",
