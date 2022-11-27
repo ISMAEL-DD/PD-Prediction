@@ -1,4 +1,4 @@
-# Importer les libraries
+## Importer les libraries
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,7 +16,6 @@ from sklearn.model_selection import GridSearchCV, KFold
 from sklearn.neighbors import KNeighborsClassifier
 import warnings
 pd.set_option('display.max_columns', 500)
-
 warnings.filterwarnings("ignore")
 # Importation des données
 
@@ -34,7 +33,6 @@ def preprocessing(loan_data):
          "Education", "MaritalStatus", "EmploymentStatus", "EmploymentDurationCurrentEmployer", "OccupationArea",
          "HomeOwnershipType", "IncomeTotal", "DefaultDate", "AmountOfPreviousLoansBeforeLoan"]]
 # Création de notre variable cible "Default" depuis la variable "DefaultDate"
-# Elle prend True si la valeur de DefaultDate est manquente et False sinon
 # Creation of the Default variable (our target variable) that takes True
 # as a value if DefaultDate is NA and False otherwise
     loan_data["Default"] = loan_data["DefaultDate"].isnull()
@@ -45,18 +43,16 @@ def preprocessing(loan_data):
     loan_data["Default"] = loan_data["Default"].replace("False", 1)
 # so we divide them by 100
     loan_data["Interest"] = loan_data["Interest"] / 100
-
 # Nous supprimons la variable "WorkExperience car la majorité de ses valeurs sont manquantes"
     loan_data["AmountOfPreviousLoansBeforeLoan"] = loan_data["AmountOfPreviousLoansBeforeLoan"].fillna(0)
 # pour la "AmountOfPreviousLoansBeforeLoan", les clients pour lesquelles ses valeurs sont manquantes,
 # n'ont pas octroyés de crédits antérieurement, nous remplaçons donc ces valeurs par 0
     loan_data.loc[loan_data["Age"] < 18, "Age"] = loan_data["Age"].quantile(0.25)
-# Nous remplaçons les valeurs de la variables "Age" qui sont inférieurs à 0 par le premier quartile de cette bvariable
+# Nous remplaçons les valeurs de la variables "Age" qui sont inférieurs à 0 par le premier quartile de cette variable
 # loan_data.loc[(loan_data["IncomeTotal"] <= 100) & (loan_data["EmploymentStatus"] != 1)]["IncomeTotal"].unique()
     loan_data.loc[(loan_data["IncomeTotal"] == 0) & (loan_data["EmploymentStatus"] != 1), "IncomeTotal"] = \
         loan_data["IncomeTotal"].quantile(0.25)
 # Si un client a un emploi et que son revenu est 0, nous remplaçons ce dernier par le premier quartile
-# de la variable "IncomTotal"
     categorical_columns = ["EmploymentDurationCurrentEmployer", "HomeOwnershipType", "OccupationArea",
                            "EmploymentStatus", "MaritalStatus", "Education", "Gender"]
     loan_data[categorical_columns] = loan_data[categorical_columns].fillna(loan_data.mode().iloc[0])
@@ -68,7 +64,6 @@ def preprocessing(loan_data):
     loan_data = loan_data.loc[(loan_data["OccupationArea"] > 0) & (loan_data["MaritalStatus"] > 0)
                               & (loan_data["EmploymentStatus"] > 0)]
     loan_data = loan_data.drop(["DefaultDate"], axis=1)
-
 # Nous supprimons les ligne ayant la valeur 0 comme modalité au niveau des variables
 # "OccupationArea", "MaritalStatus", "EmploymentStatus".
     return loan_data
@@ -78,7 +73,7 @@ loan_data_frame = preprocessing(loan)
 loan_data_frame.isna().sum()
 # On commence par transformer les modalités des variables qualitatives
 # ayant comme type float en des modalités de type entier
-# Conversion des variables catégorielles en type categorielle
+# Conversion des variables catégorielles en type categoriel
 categorical_variables = ["NewCreditCustomer", "Gender", "Education", "MaritalStatus", "EmploymentStatus",
                          "OccupationArea", "HomeOwnershipType", "Default", "UseOfLoan", "Country",
                          "EmploymentDurationCurrentEmployer"]
@@ -96,20 +91,17 @@ categories = predictors.select_dtypes('category').columns.tolist()
 encoder = OneHotEncoder(sparse=False, handle_unknown="ignore", drop='first')
 # Creation du pipeline de l'encodage et du modèle statistique
 preprocessor = make_column_transformer((encoder, categories), (StandardScaler(), numeric))
-
 # Creation des données d'entrainement et de test
-X_train, X_test, y_train, y_test = train_test_split(predictors, target, test_size=0.2)
+X_train, X_test, y_train, y_test = train_test_split(predictors, target, test_size=0.3, random_state=42)
 
 
 def oversampling_undersampling(training_variables, training_target, over=False):
     """
     Pour équilibrer notre base de données
     """
-
     lotemp = pd.concat([training_variables, training_target], axis=1)
     defaut = lotemp[lotemp["Default"] == 1]
     nondefaut = lotemp[lotemp["Default"] == 0]
-
     if over:
         oversampled_default = resample(defaut, replace=True, n_samples=len(nondefaut), random_state=42)
         data1 = nondefaut
@@ -164,7 +156,7 @@ acp_inspection(X_train, y_train)
 # Build the pipeline
 # Set up the pipeline steps: steps
 steps = [('one_hot', preprocessor),
-         ('reducer', PCA()),
+         ('reducer', PCA(n_components=16)),
          ('classifier', LogisticRegression())]
 pipe = Pipeline(steps)
 param_dict = {"reducer__n_components": np.arange(4, 20, 2)}
@@ -198,10 +190,10 @@ pca_tune(pipe, param_dict, X_train, y_train, X_test, y_test)
 # Build the pipeline
 # Set up the pipeline steps: steps
 steps3 = [('one_hot', preprocessor),
-          ('reducer', PCA(12)),
+          ('reducer', PCA(n_components=16)),
           ('knn', KNeighborsClassifier())]
 pipe3 = Pipeline(steps3)
-param_dict1 = {'knn__n_neighbors': np.arange(11, 23, 2)}
+param_dict1 = {'knn__n_neighbors': np.arange(17, 21, 1)}
 
 
 def knn_tune(pipeline2, parameters, training_variables, training_target, testing_variables, testing_target):
@@ -238,7 +230,7 @@ def pipeline_logreg(training_variables, training_target, testing_variables, test
     """
 
     steps1 = [('one_hot', preprocessor),
-              ('reducer', PCA(n_components=12)),
+              ('reducer', PCA(n_components=16)),
               ('classifier', LogisticRegression())]
     pipe1 = Pipeline(steps1)
     pipe1.fit(training_variables, training_target)
@@ -262,8 +254,8 @@ def pipeline_knn(training_variables, training_target, testing_variables, testing
     """
 
     steps4 = [('one_hot', preprocessor),
-              ('reducer', PCA(n_components=12)),
-              ('knn', KNeighborsClassifier(n_neighbors=11))]
+              ('reducer', PCA(n_components=16)),
+              ('knn', KNeighborsClassifier(n_neighbors=15))]
     pipe4 = Pipeline(steps4)
     pipe4.fit(training_variables, training_target)
     # Calculer y_pred a travers X_test
@@ -283,15 +275,15 @@ def evaluation_model(model, training_variables, training_target):
     :param training_variables are the predictors
     :param training_target are is the response variable
     """
-
+    cv = KFold(n_splits=3, shuffle=True, random_state=42)
     # Compute 3-fold cross-validation scores: cv_scores
-    cv_accuracy = cross_val_score(model, training_variables, training_target, cv=3, scoring='accuracy')
+    cv_accuracy = cross_val_score(model, training_variables, training_target, cv=cv, scoring='accuracy')
     print("Average 3-Fold CV accuracy: {}".format(np.mean(cv_accuracy)))
-    cv_recall = cross_val_score(model, training_variables, training_target, cv=3, scoring='recall')
+    cv_recall = cross_val_score(model, training_variables, training_target, cv=cv, scoring='recall')
     print("Average 3-Fold CV recall: {}".format(np.mean(cv_recall)))
-    cv_f1 = cross_val_score(model, training_variables, training_target, cv=3, scoring='f1')
+    cv_f1 = cross_val_score(model, training_variables, training_target, cv=cv, scoring='f1')
     print("Average 3-Fold CV f1: {}".format(np.mean(cv_f1)))
-    cv_precision = cross_val_score(model, training_variables, training_target, cv=3, scoring='precision')
+    cv_precision = cross_val_score(model, training_variables, training_target, cv=cv, scoring='precision')
     print("Average 3-Fold CV precision: {}".format(np.mean(cv_precision)))
 
 
