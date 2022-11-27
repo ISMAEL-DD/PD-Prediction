@@ -4,8 +4,8 @@ from tools1 import *
 
 class MyTestCase(unittest.TestCase):
     def test_preprocess(self):
-        self.assertNotEqual(preprocessing(loan)["UseOfLoan", "MaritalStatus", "EmploymentStatus",
-                                                "OccupationArea", "HomeOwnershipType"], -1)
+        self.assertNotEqual(preprocessing(loan)[["UseOfLoan", "MaritalStatus", "EmploymentStatus",
+                                                "OccupationArea", "HomeOwnershipType"]].values.any(), -1)
     def test_values_defaults(self):
         self.assertEqual(oversampling_undersampling(X_train, y_train, over=False)[3],
                          oversampling_undersampling(X_train, y_train, over=False)[4])
