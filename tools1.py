@@ -1,4 +1,4 @@
-## Importer les libraries
+# Importer les libraries
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -67,8 +67,7 @@ def preprocessing(loan_data):
 # Nous supprimons les ligne ayant la valeur 0 comme modalité au niveau des variables
 # "OccupationArea", "MaritalStatus", "EmploymentStatus".
     return loan_data
-print(preprocessing(loan)[["UseOfLoan", "MaritalStatus", "EmploymentStatus",
-                                                "OccupationArea", "HomeOwnershipType"]].values.any()==-1)
+
 
 loan_data_frame = preprocessing(loan)
 loan_data_frame.isna().sum()
