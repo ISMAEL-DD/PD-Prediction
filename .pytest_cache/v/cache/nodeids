@@ -1,0 +1,6 @@
+[
+  "test1.py::MyTestCase::test_knn_tune",
+  "test1.py::MyTestCase::test_pca_tune",
+  "test1.py::MyTestCase::test_preprocess",
+  "test1.py::MyTestCase::test_values_defaults"
+]
